@@ -14,8 +14,30 @@ const globeContainer = document.getElementById('globeViz');
 
 const colorScale = d3.scaleSequentialPow(d3.interpolateYlOrRd).exponent(1 / 4);
 const getVal = (feat) => {
+  //console.log(feat.properties.NAME+"国家"+feat);
+  //ShowObjProperty2(feat);
   return feat.covidData.confirmed / feat.properties.POP_EST;
 };
+//console.log(feat.properties.NAME+"国家"+feat)
+//feat.properties.NAME 国家名称
+//feat.covidData.confirmed 确诊人数
+//feat.properties.POP_EST 人口数量
+
+
+/*function ShowObjProperty2( obj ) {
+  // 用来保存所有的属性名称和值
+  var outputMessage='';
+  // 开始遍历
+  for ( var p in obj ){
+      
+          outputMessage += '打印：' + p + " = " + obj[p] + "\r\n" ;
+          console.log(outputMessage);
+      
+  }
+  // 最后显示所有的属性
+  //return attributes, methods
+}*/
+
 
 let world;
 let flagName;
@@ -38,7 +60,7 @@ function init() {
       } else if (d.ADMIN === 'Norway') {
         flagName = 'no';
       } else {
-        flagName = d.ISO_A2.toLowerCase();
+        flagName = d.ISO_A2.toLowerCase();//c.confirmed
       }
 
       return `
@@ -81,7 +103,7 @@ const slider = document.querySelector('.slider');
 // Slider date
 const sliderDate = document.querySelector('.slider-date');
 
-function polygonFromCenter(center, radius=0.5, num=10) {
+function polygonFromCenter(center, radius=0.5, num=10) {//center, radius=0.5, num=10
   let coords = [];
   for (let i = 0; i < num; i++) {
     const dx = radius*Math.cos(2*Math.PI*i/num);
@@ -91,9 +113,10 @@ function polygonFromCenter(center, radius=0.5, num=10) {
   return [coords];
 }
 
+//从数据源获取数据并 调用了三个函数《-？
 async function getCases() {
-  countries = await request(CASES_API);
-  featureCollection = (await request(GEOJSON_URL)).features;
+  countries = await request(CASES_API);//疫情信息
+  featureCollection = (await request(GEOJSON_URL)).features;//国家信息
 
   // featureCollection2 = (await request(GEOJSON_URL2)).features.map(d => {
   //   d.geometry.type = "Polygon";
@@ -106,7 +129,7 @@ async function getCases() {
   document.querySelector('.title-desc').innerHTML =
     'Hover on a country or territory to see cases, deaths, and recoveries.';
 
-  dates = Object.keys(countries.China);
+  dates = Object.keys(countries.China);//data是数组，存放了所有日期
 
   // Set slider values
   slider.max = dates.length - 1;
@@ -114,6 +137,8 @@ async function getCases() {
 
   slider.disabled = false;
   playButton.disabled = false;
+
+  //？
 
   updateCounters();
   updatePolygonsData();
@@ -133,12 +158,14 @@ function updateCounters() {
   let totalDeaths = 0;
   let totalRecoveries = 0;
 
+  //item是每个国家名，countries里面存放每个国家：国家每日疫情信息（包含截止到某日的确诊、恢复、死亡）
+  //slider.value是数据轴的值，dates是存放了日期的数组，dates[slider.value]是其对应的日期
   Object.keys(countries).forEach((item) => {
     if (countries[item][dates[slider.value]]) {
       const countryDate = countries[item][dates[slider.value]];
-      totalConfirmed += +countryDate.confirmed;
+      totalConfirmed += +countryDate.confirmed;//+countryDate.confirmed
       totalDeaths += +countryDate.deaths;
-      totalRecoveries += countryDate.recoveries ? +countryDate.recoveries : 0;
+      totalRecoveries += countryDate.recoveries ? +countryDate.recoveries : 0;//为什么要加+？为啥这里有个判断？
     }
   });
 
@@ -149,6 +176,7 @@ function updateCounters() {
   updatedEl.innerHTML = `(as of ${formatDate(dates[slider.value])})`;
 }
 
+//countries存入了data.json文件的数据，在这里放入了featureCollection
 function updatePolygonsData() {
   for (let x = 0; x < featureCollection.length; x++) {
     const country = featureCollection[x].properties.NAME;
